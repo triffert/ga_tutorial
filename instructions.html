@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<style>
+pre code {
+  background-color: #eee;
+  border: 1px solid #999;
+  display: block;
+  padding: 20px;
+}
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+
+
+
+</style>
+<head>
+    <title>Instructions to set up Google Analytics API</title>
+</head>
+<body>
+<div>
+    <h1>Instructions to set up Google Analytics API</h1>
+    <div>
+        <h2>Getting started</h2>
+        <p>Go to <a href="https://console.developers.google.com/">Google Developer</a> and set up an account and a first
+            project. A tutorial on how to do this can be found <a
+                    href="https://developers.google.com/workspace/guides/create-project">here</a>.</p>
+        <h2>Creating the credentials</h2>
+        <p>Once this is done we need to create the credentials for an oauth client, with the appropriate scopes. The
+            outcome is a set of keys that we will add to our path when running our scripts, so we can authenticate our
+            service with google.</p>
+        <img alt="step 1: create credentials" class="center" src="static/1.png">
+        <p>We are looking to create an oauth client. This requires configuring the consent screen that users will see
+            when using the application.</p>
+        <img alt="step 2: choose oauth client id" class="center" src="static/2.png">
+        <img alt="step 3: configure oauth consent screen" class="center" src="static/3.png">
+        <h2>Adding scopes - general and GA specific</h2>
+        <p>Next we choose the scopes we want to have available for our application. We add the basic scopes we want to
+            have access to and then add Google Analytics as an extra scope. The configuration here allows the
+            application to request these scopes in our python request.</p>
+        <img alt="step 4: add scopes" class="center" src="static/4.png">
+        <img alt="step 5: choose basic info - email and personal" class="center" src="static/5.png">
+        <img alt="step 6: add the accounts you want to use for testing" class="center" src="static/6.png">
+        <img alt="step 7: add other APIs" class="center" src="static/7.png">
+        <p>We now add the google analytics scope.</p>
+        <img alt="step 8: enable APIs and services" class="center" src="static/8.png">
+        <img alt="step 9: pick Google Analytics" class="center" src="static/9.png">
+        <img alt="step 10: select Google Analytics API" class="center" src="static/10.png">
+        <img alt="step 11: enable Google Analytics API" class="center" src="static/11.png">
+        <h2>Getting the keys</h2>
+        <p>Now that we have defined the scopes, we need to get the secret keys to add to our application/script.</p>
+        <img alt="step 12: create oauth credentials" class="center" src="static/12.png">
+        <img alt="step 13: select desktop app" class="center" src="static/13.png">
+        <img alt="step 14: download secrets" class="center" src="static/14.png">
+        <p>Now we have the secrets we need to authenticate. The python script assumes a file '.secrets' to exist in the
+            directory of the script. Create the file and insert the downloaded json. The contents of the file should
+            look roughly like this:
+        </p>
+        <pre><code>{
+    "installed":{
+        "client_id": YOUR_CLIENT_ID,
+        "project_id": YOUR_PROJECT_ID,
+        "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+        "token_uri":"https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": YOUR_CLIENT_SECRETS,
+        "redirect_uris":["http://localhost"]
+    }
+}</code></pre>
+    </div>
+</div>
+</body>

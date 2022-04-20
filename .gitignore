@@ -1,2 +1,5 @@
 venv/
 .secrets
+.tokens
+.DS_Store
+.idea/
