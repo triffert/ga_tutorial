@@ -18,35 +18,6 @@ GOOGLE_SCOPES = ["https://www.googleapis.com/auth/analytics.readonly",
                  "openid"]
 
 
-# Class to handle the two incompatible Google Analytics APIs automatically depending on if the account is a Universal
-# Analytics (GA3) or a Google Analytics 4 (GA4) account.
-class GoogleAnalyticsAccount:
-
-    def __init__(self, account_id, account_name, version):
-        self.account_id = account_id
-        self.account_name = account_name
-        if version not in [3, 4]:
-            raise ValueError("Only supported version numbers for Google Analytics are 3 or 4.")
-        self.version = version
-
-
-# Class that gets all Google Analytics accounts associated with a user.
-class GoogleAnalyticsUser:
-
-    def __init__(self, credentials=None):
-        self.credentials = credentials if credentials is not None else get_credentials_from_file()
-        self.accounts = []
-
-    def load_google_analytics_accounts(self):
-        self.accounts = []
-        # Get all Universal Analytics accounts using the analytics management api
-        google_analytics_3_service = build(serviceName='analytics', version='v3', credentials=credentials)
-        google_analytics_3_accounts = google_analytics_3_service.management().accounts().list().execute()
-        for account in google_analytics_3_accounts['items']:
-
-
-
-
 # Load the access tokens from your local file or get new tokens using your secrets
 def get_credentials_from_file(secrets_file='.secrets', token_file='.tokens'):
     credentials = None
@@ -68,29 +39,53 @@ def get_credentials_from_file(secrets_file='.secrets', token_file='.tokens'):
     return credentials
 
 
-# Get the service api from Google to use in requests
-def get_google_analytics_service(credentials, version=3):
-    if version not in [3, 4]:
-        return None
-    if version == 3:
-        return build(serviceName='analytics', version='v3', credentials=credentials)
-    if version == 4:
-        return build(serviceName='analyticsadmin', version='v1alpha', credentials=credentials)
-
-
 def main():
     # Get the access token
     credentials = get_credentials_from_file()
 
-    service3 = get_google_analytics_service(credentials, version=3)
+    # Core building blocks for accessing a Google API are:
+    # 1) Creating access to the service. This requires the serviceName and version. Both can be found in the request URL
+    #    Keep in mind the version here corresponds to the API version. Not the analytics version.
+
+    # Get accounts that have type GA3/UA
+    # API doc: https://developers.google.com/analytics/devguides/config/mgmt/v3/account-management
+    # Base url:
+    analytics_service = build(serviceName='analytics', version='v3', credentials=credentials)
     # Get a list of all Google Analytics accounts for this user
-    accounts3 = service3.management().accounts().list().execute()
-    print(accounts3)
+    analytics_accounts = analytics_service.management().accounts().list().execute()
+    print(analytics_accounts)
 
-    service4 = get_google_analytics_service(credentials, version=4)
-    accounts4 = service4.accounts().list().execute()
-    print(accounts4)
+    # TODO extract view IDs
 
+    # # Access data for account of type GA3/UA
+    # # API doc: https://developers.google.com/analytics/devguides/reporting/core/v4/rest
+    # # Base url: https://analyticsreporting.googleapis.com
+    # # analyticsreporting_service = build(serviceName='analyticsreporting', version='v4', credentials=credentials)
+    # view_id = analytics_accounts
+    # analyticsreporting_service.reports().batchGet(
+    #     body={
+    #         'reportRequests': [
+    #             {
+    #                 # TODO enter extracted view ID
+    #                 'viewId': VIEW_ID,
+    #                 'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],
+    #                 'metrics': [{'expression': 'ga:sessions'}],
+    #                 'dimensions': [{'name': 'ga:country'}]
+    #             }]
+    #     }
+    # ).execute()
+
+    # Get accounts that have type GA4
+    # API doc: https://developers.google.com/analytics/devguides/config/admin/v1/rest/v1alpha/accounts/list
+    # Base url: https://analyticsadmin.googleapis.com/v1alpha/
+    analyticsadmin_service = build(serviceName='analyticsadmin', version='v1alpha', credentials=credentials)
+    analyticsadmin_accounts = analyticsadmin_service.accounts().list().execute()
+    print(analyticsadmin_accounts)
+
+    # # Get data from a GA4 account
+    # # API doc: https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties?hl=en
+    # # Base url: https://analyticsdata.googleapis.com/v1beta/
+    # analyticsdata_service = build(serviceName='analyticsadmin', version='v1beta', credentials=credentials)
 
 
 if __name__ == '__main__':
